@@ -138,7 +138,7 @@ module TxCore(
         .data_i(Data_i),
         .n_we_i(n_enbaled_we_w),
         .n_re_i(n_FifoRe_w),
-        .n_clr_i(n_clr_i),
+        .n_clr_i(n_Clr_i),
         .data_o(FifoData_w),
         .bytes_in_fifo_o(bytes_in_fifo_o),
         .p_over_o(p_Over_o),
