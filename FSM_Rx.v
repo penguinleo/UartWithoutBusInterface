@@ -80,11 +80,11 @@ module FSM_Rx(
             parameter DISABLE   = 1'b0;
     // wire assign
         assign state_w          = (state_A_r & state_B_r)
-                                & (state_B_r & state_C_r)
-                                & (state_C_r & state_A_r);
+                                | (state_B_r & state_C_r)
+                                | (state_C_r & state_A_r);
         assign bit_counter_w    = (bit_counter_A_r & bit_counter_B_r)
-                                & (bit_counter_B_r & bit_counter_C_r)
-                                & (bit_counter_C_r & bit_counter_A_r);
+                                | (bit_counter_B_r & bit_counter_C_r)
+                                | (bit_counter_C_r & bit_counter_A_r);
         assign State_o          = state_w;
         assign BitCounter_o 	= bit_counter_w;
         // assign p_ParityCalTrigger_o = p_ParityCalTrigger_w;

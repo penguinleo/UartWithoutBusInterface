@@ -93,6 +93,7 @@ module  FIFO_ver2
         assign p_nearfull_o             = p_nearfull_w;
         assign p_over_o                 = p_over_w;
         assign data_o                   = output_data_r;
+        assign bytes_in_fifo_o          = bytes_in_fifo_r;
     // the write pointer update, pointer_wr_rx
         always @(posedge clk or negedge rst) begin
             if (!rst || !n_clr_i) begin

@@ -442,10 +442,10 @@ module CtrlCore(
             assign DataBus_o            = DataBus_r1;
             assign p_TxCoreEn_o         = TxEn_w;
             assign TxData_o             = DataBus_i;
-            assign n_TxFIFO_We_o        = (TxFIFO_We_r1[2] == N_OFF) && (TxFIFO_We_r1[1] == N_ON);     // falling edge of the TxDataPort_Write_Access_w trigger the write operation
+            assign n_TxFIFO_We_o        = ~((TxFIFO_We_r1[2] == N_OFF) && (TxFIFO_We_r1[1] == N_ON) && (AddrBus_i == ADDR_TxDataPort));     // falling edge of the TxDataPort_Write_Access_w trigger the write operation
             assign n_TxFIFO_Clr_o       = ~p_TxRst_r1; 
             assign p_RxCoreEn_o         = RxEn_w;
-            assign n_RxFIFO_Rd_o        = FallingEdge_rd_w;    // the read signal is generated from the bus access 
+            assign n_RxFIFO_Rd_o        = ~((FallingEdge_rd_w == ON) && (AddrBus_i == ADDR_RxDataPort));    // the read signal is generated from the bus access 
             assign n_RxFIFO_Clr_o       = ~p_RxRst_r1;
             assign BaudRateGen_o        = BaudGenerator_r1;
             assign RoundUpNum_o         = BitCompensateMethod_r1[7:4];
