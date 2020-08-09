@@ -130,7 +130,7 @@ module TxCore(
         );
 
     FIFO_ver2 #(
-        .WIDTH(16'd16),
+        // .WIDTH(16'd16),
         .DEPTH(16'd4096)        
         ) TxCoreFifo (
         .clk(clk),

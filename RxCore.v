@@ -203,8 +203,8 @@ module RxCore(
         );
 
     FIFO_ver2 #(
-        .DEPTH(8'd128),
-        .WIDTH(16'd7)
+        .DEPTH(8'd128)
+        // .WIDTH(16'd7)
         ) 
     RxCoreFifo (
         .clk(clk),

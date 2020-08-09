@@ -25,7 +25,7 @@
 
 module  FIFO_ver2
 #(
-    parameter WIDTH = 16'd16,
+    // parameter WIDTH = 16'd16,
     parameter DEPTH = 16'd4096
     )
 (
@@ -43,7 +43,7 @@ module  FIFO_ver2
     output          p_empty_o         
     );
     // register definition
-        reg [7:0]   memory [WIDTH-1:0];     // the memory
+        reg [7:0]   memory [DEPTH-1:0];     // the memory
         // pointer 1
             reg [15:0]  pointer_wr_r1/*synthesis syn_preserve = 1*/;           // the memory pointer for write
             reg [15:0]  pointer_rd_r1/*synthesis syn_preserve = 1*/;           // the memory pointer for read
@@ -194,7 +194,7 @@ module  FIFO_ver2
             if (!rst || !n_clr_i) begin
                 bytes_in_fifo_r <= 16'd0;              
             end
-            else if (pointer_wr_w <= pointer_rd_w) begin
+            else if (pointer_wr_w < pointer_rd_w) begin
                 bytes_in_fifo_r <= pointer_rd_w - pointer_wr_w + DEPTH;           
             end
             else begin
