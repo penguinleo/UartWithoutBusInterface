@@ -513,6 +513,25 @@ module CtrlCore(
                 p_TxRst_r1      <= OFF; 
             end
         end
+    // UartState register fresh
+        always @(posedge clk or negedge rst) begin
+            if (!rst) begin
+                UartState_r1 <= {
+                    1'b1,               OFF,                OFF,                1'b1,               // B15~B12
+                    OFF,                OFF,                1'b1,               1'b1,               // B11~B8
+                    1'b1,               1'b1,               1'b1,               OFF,                // B7~B4
+                    OFF,                OFF,                OFF,                OFF,                // B3~B0
+                };                
+            end
+            else begin
+                UartState_r1 <= {
+                    1'b1,               shift_TNFUL_r1[1],  shift_TTRIG_r1[1],  1'b1,               // B15~B12
+                    UartControl_r1[2],  UartControl_r1[3],  1'b1,               1'b1,               // B11~B8
+                    1'b1,               1'b1,               1'b1,               shift_TFUL_r1[1],   // B7~B4
+                    shift_TEMPTY_r1[1], shift_RFULL_r1[1],  shift_REMPTY_r1[1], shift_RTRIG_r1[1],  // B3~B0
+                };    
+            end
+        end
     // UartMode register fresh
         always @(posedge clk or negedge rst) begin
             if (!rst) begin   // Initial state
@@ -804,11 +823,12 @@ module CtrlCore(
                     shift_TEMPTY_r1     <= 3'b0;
                     shift_RFULL_r1      <= 3'b0;
                     shift_REMPTY_r1     <= 3'b0;
+                    shift_RTRIG_r1      <= 3'b0;
                 end
                 else begin
                     shift_TOVR_r1       <= {shift_TOVR_r1[1:0],         p_TxFIFO_Over_i};
                     shift_TNFUL_r1      <= {shift_TNFUL_r1[1:0],        p_TxFIFO_NearFull_i};
-                    shift_TTRIG_r1      <= {shift_TTRIG_r1[1:0],        ((BytesNumberInRxFifo_r1 >= TxTrigLevel_r1)&(TxTrigLevel_r1!=16'd0))}; // bytes number in fifo over the level and the level is not 0!
+                    shift_TTRIG_r1      <= {shift_TTRIG_r1[1:0],        ((BytesNumberInTxFifo_r1 >= TxTrigLevel_r1)&(TxTrigLevel_r1!=16'd0))}; // bytes number in fifo over the level and the level is not 0!
                     shift_TIMEOUT_r1    <= {shift_TIMEOUT_r1[1:0],      p_RxTimeOut_i};
                     shift_ParityErr_r1  <= {shift_ParityErr_r1[1:0],    p_RxParityErr_i};
                     shift_FrameErr_r1   <= {shift_FrameErr_r1[1:0],     p_RxFrameErr_i};
@@ -816,6 +836,7 @@ module CtrlCore(
                     shift_TEMPTY_r1     <= {shift_TEMPTY_r1[1:0],       p_TxFIFO_Empty_i};
                     shift_RFULL_r1      <= {shift_TFUL_r1[1:0],         p_RxFIFO_Full_i};
                     shift_REMPTY_r1     <= {shift_REMPTY_r1[1:0],       p_RxFIFO_Empty_i};
+                    shift_RTRIG_r1      <= {shift_RTRIG_r1[1:0],        ((BytesNumberInRxFifo_r1 >= TxTrigLevel_r1)&(RxTrigLevel_r1!=16'd0))}; //
                 end
             end
         // TOVR, transmission fifo overflow interrupt
