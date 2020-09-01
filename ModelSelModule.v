@@ -32,7 +32,7 @@ module ModelSelModule (
         input           RxPort_i,
     // interface with the Rx module
         output          RxModulePort_o,
-    // interface with the Tx module
+    // interface with the Tx modulezz
         input           TxModulePort_i 
 );
     // parameter definition
