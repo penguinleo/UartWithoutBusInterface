@@ -88,6 +88,8 @@ module UartCore(
     wire        p_SendFinished_w;
     wire        p_DataReceived_w;
     wire        p_RxTimeOut_w;
+    wire        RxPort_w;
+    wire        TxPort_w;
     // logic definition
         assign BitCompensation_w = {RoundUpNum_w, RoundDownNum_w};
     CtrlCore ControlCore(
@@ -152,6 +154,16 @@ module UartCore(
         .BaudSig_o(BaudSig_w)
     );
 
+    ModelSelModule ModeSelModule(
+        .clk(clk),
+        .rst(rst),
+        .ModeSelected_i(ModeSel_w),
+        .TxPort_o(Tx_o),
+        .RxPort_i(Rx_i),
+        .RxModulePort_o(RxPort_w),
+        .TxModulePort_i(TxPort_w)
+    );
+
     RxCore RxCore(
         .clk(clk),
         .rst(rst),
@@ -193,7 +205,7 @@ module UartCore(
         // error counter
             .ParityErrorNum_o(ParityErrorNum_w),
         // the receive signal
-        .Rx_i(Rx_i)
+        .Rx_i(RxPort_w)
     );
 
     TxCore TxCore(
@@ -217,7 +229,7 @@ module UartCore(
             .p_BigEnd_i(p_BigEnd_w),
             .ParityMethod_i(ParityMethod_w),
         // .p_SendFinished_o(p_SendFinished_w),
-        .Tx_o(Tx_o) 
+        .Tx_o(TxPort_w) 
     );
 
     // AnsDelayTimeMeasure AnsDlyMea(
