@@ -74,7 +74,7 @@ module  FIFO_ver2
         wire        p_empty_condition_w;
         wire        p_nearfull_condition_w;
     // parameter definition
-        parameter   NEAR_FULL_LEVEL = DEPTH>>2 * 3;
+        parameter   NEAR_FULL_LEVEL = (DEPTH>>2) * 3;
     // assign
         // assign p_empty_w    = (pointer_wr_r == pointer_rd_r);
         // assign p_full_w     = (next_pointer_wr_r == pointer_rd_r);

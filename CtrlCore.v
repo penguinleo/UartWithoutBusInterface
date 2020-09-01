@@ -97,6 +97,8 @@ module CtrlCore(
         output [3:0]    RoundUpNum_o,               // The compensate method high 4 bits, round up acquisition period
         output [3:0]    RoundDownNum_o,             // The compensate method low 4 bits, round down acquisition period
         output [3:0]    BaudDivider_o,              // The divider for the baudrate signal and the acquisition signal
+    // Model select module interface 
+        output [3:0]    ModeSel_o,                  // Just a package of logic
     // tx module interface
         output          p_TxCoreEn_o,               // The Tx core enable signal. Positive effective 
         // fifo control signal
@@ -463,6 +465,7 @@ module CtrlCore(
                                             |   InterruptState_r1[02]       // RFULL
                                             |   InterruptState_r1[01]       // REMPTY
                                             |   InterruptState_r1[00];      // RTRIG
+            assign ModeSel_o            = ModeSel_w;
             // assign p_RxFrame_Func_En_o  = ;
             // assign n_RxFrameInfo_Rd_o   = ;   // the read signal generated from the bus access
             assign p_ParityEnable_o     = ParEn_w;

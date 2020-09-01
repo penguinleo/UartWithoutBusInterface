@@ -74,6 +74,7 @@ module UartCore(
     wire [15:0] RxTimeOutSet_w;
     wire [15:0] RxTimeCnt_w;
     wire [27:0] RxFrameInfo_w;
+    wire [3:0]  ModeSel_w;
     wire [7:0]  TxData_w;
     wire [7:0]  RxData_w;
     wire [15:0] TxFIFO_Level_w;
@@ -105,6 +106,8 @@ module UartCore(
             .RoundUpNum_o(RoundUpNum_w),
             .RoundDownNum_o(RoundDownNum_w),
             .BaudDivider_o(AcqNumPerBit_w), 
+        // model select module interface
+            .ModeSel_o(ModeSel_w),
         // tx module interface
             .p_TxCoreEn_o(p_TxCoreEn_w),
             .TxData_o(TxData_w),
