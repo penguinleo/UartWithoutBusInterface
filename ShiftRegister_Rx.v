@@ -131,9 +131,9 @@ module ShiftRegister_Rx(
         assign acqsig_dly_3clk_w    = shift_acq_r[2];
         assign acquisition_point_w  = {1'b0, AcqNumPerBit_i[3:1]};      // the acquisition point is the middle point in the acquisition points
         assign acquisite_time_w     = bit_width_cnt_r == acquisition_point_w;
-        assign Rx_Synch_o           = falling_edge_rx_w & (State_i == IDLE);
+        assign Rx_Synch_o           = falling_edge_rx_w & ((State_i == IDLE)|(State_i == STOPBIT));
         assign Bit_Synch_o          = (bit_width_cnt_r >= AcqNumPerBit_i) & (State_i != IDLE) & (AcqSig_i == 1'b1);
-        assign Byte_Synch_o         = (State_i == STOPBIT) & (acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1);
+        assign Byte_Synch_o         = (State_i == STOPBIT) & (((acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1))|(falling_edge_rx_w == 1'b1));
         assign Byte_o               = byte_r;
         assign BitWidthCnt_o        = bit_width_cnt_r;
         // assign p_ParityCalTrigger_o = (State_i == PARITYBIT) & (acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1);

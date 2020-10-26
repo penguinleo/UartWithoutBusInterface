@@ -131,7 +131,7 @@ module RxCore(
             parameter STOPBIT   = 5'b1_0000;
     // logic definition
     	assign p_DataReceived_w = Byte_Synch_w;
-    	assign p_DataReceived_o = p_DataReceived_w;
+    	// assign p_DataReceived_o = p_DataReceived_w;
         assign RxFrameInfo = 28'h1234567;
     FSM_Rx StateMachine(
         .clk(clk),

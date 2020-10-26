@@ -175,7 +175,12 @@ module FSM_Rx(
                         end
                     end
                     STOPBIT: begin
-                        if (Bit_Synch_i == 1'b1) begin
+                        if ((Rx_Synch_i == 1'b1)&&(p_Enable_i == ENABLE)) begin
+                            state_A_r <= STARTBIT;                              
+                            state_B_r <= STARTBIT;
+                            state_C_r <= STARTBIT;
+                        end
+                        else if (Bit_Synch_i == 1'b1) begin
                             state_A_r <= INTERVAL;
                             state_B_r <= INTERVAL;
                             state_C_r <= INTERVAL;
