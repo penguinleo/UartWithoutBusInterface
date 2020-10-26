@@ -86,7 +86,7 @@ module ByteAnalyseV2(
         input           ParityResult_i,
     // status signal 
         output          p_ParityErr_o,    // Parity error status flag
-        output          p_FrameErr_o,     // Stop bit missing flag
+        // output          p_FrameErr_o,     // Stop bit missing flag
         output  [7:0]   ParityErrorNum_o
     );
     // register definition
@@ -95,7 +95,7 @@ module ByteAnalyseV2(
             reg [11:0]      byte_r;   // the buffer for the input data
             reg             parity_trig_r;
             reg [2:0]       parity_result_r/*Synthesis syn_preserve = 1*/;
-            reg [2:0]       frame_error_r/*Synthesis syn_preserve = 1*/;
+            // reg [2:0]       frame_error_r/*Synthesis syn_preserve = 1*/;
             reg [7:0]       fifo_data_r;        // the data that sent to the fifo
             reg             n_we_r;             // the we signal of the fifo
             reg             n_rd_frame_fifo_r;  // 
@@ -126,7 +126,7 @@ module ByteAnalyseV2(
             wire        stop_bit_w;
             wire        falling_edge_rd_fifo_w;
             wire        parity_result_w;
-            wire        frame_error_w;
+            // wire        frame_error_w;
         // Frame0 information definition
             wire [11:0] frame0_stamp_ms_w;
             wire [3:0]  frame0_stamp_us_w;
@@ -170,7 +170,7 @@ module ByteAnalyseV2(
             assign n_we_o               = n_we_r;
             assign ParityErrorNum_o     = parity_error_num_r;
             assign p_ParityErr_o        = ~parity_result_w;
-            assign p_FrameErr_o         = frame_error_w;
+            // assign p_FrameErr_o         = frame_error_w;
         // inner logic signal
             assign start_bit_w              = byte_r[11];
             assign little_end_data_w        = {
@@ -188,11 +188,11 @@ module ByteAnalyseV2(
                                                 ||  (parity_result_r[1]&parity_result_r[2])
                                                 ||  (parity_result_r[2]&parity_result_r[0])
                                             );
-            assign frame_error_w            = (
-                                                    (frame_error_r[0]&frame_error_r[1])
-                                                ||  (frame_error_r[1]&frame_error_r[2])
-                                                ||  (frame_error_r[2]&frame_error_r[0])
-                                            ) ;
+            // assign frame_error_w            = (
+            //                                         (frame_error_r[0]&frame_error_r[1])
+            //                                     ||  (frame_error_r[1]&frame_error_r[2])
+            //                                     ||  (frame_error_r[2]&frame_error_r[0])
+            //                                 ) ;
         // Frame0 and Frame1 logic definition
             assign frame0_stamp_ms_w = frame0_info_r[17:16];
             assign frame0_stamp_us_w = frame0_info_r[15:12];
@@ -296,24 +296,25 @@ module ByteAnalyseV2(
                     parity_result_r <= parity_result_r;
                 end
             end
-        // frame error detect register
-            always @(posedge clk or negedge rst) begin
-                if (!rst) begin
-                    frame_error_r <= {FRM_TRUE, FRM_TRUE, FRM_TRUE};                  
-                end
-                else if (state_r == CHCK) begin
-                    frame_error_r <= {~stop_bit_w,~stop_bit_w,~stop_bit_w};   // if the stop bit != 1, error generate
-                end 
-                else begin
-                    frame_error_r <= {frame_error_w,frame_error_w,frame_error_w};
-                end
-            end
+        // frame error detect register --removed --20201026
+            // always @(posedge clk or negedge rst) begin
+            //     if (!rst) begin
+            //         frame_error_r <= {FRM_TRUE, FRM_TRUE, FRM_TRUE};                  
+            //     end
+            //     else if (state_r == CHCK) begin
+            //         frame_error_r <= {~stop_bit_w,~stop_bit_w,~stop_bit_w};   // if the stop bit != 1, error generate
+            //     end 
+            //     else begin
+            //         frame_error_r <= {frame_error_w,frame_error_w,frame_error_w};
+            //     end
+            // end
         // FIFO operation
             always @(posedge clk or negedge rst) begin
                 if (!rst) begin
                     n_we_r <= 1'b1;             
                 end
-                else if ((state_r == FIFO) && (parity_result_w == PAR_TRUE) && (frame_error_w == FRM_TRUE)) begin
+                // else if ((state_r == FIFO) && (parity_result_w == PAR_TRUE) && (frame_error_w == FRM_TRUE)) begin
+                else if ((state_r == FIFO) && (parity_result_w == PAR_TRUE)) begin
                     n_we_r <= 1'b0;
                 end
                 else begin
