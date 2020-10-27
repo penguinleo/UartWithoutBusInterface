@@ -74,7 +74,7 @@ module FSM_Rx(
             parameter STARTBIT  = 5'b0_0010;
             parameter DATABITS  = 5'b0_0100;
             parameter PARITYBIT = 5'b0_1000;
-            // parameter STOPBIT   = 5'b1_0000;
+            parameter STOPBIT   = 5'b1_0000;
         // Parity Enable definition
             parameter ENABLE    = 1'b1;
             parameter DISABLE   = 1'b0;
@@ -152,9 +152,9 @@ module FSM_Rx(
                             state_C_r <= PARITYBIT; 
                         end
                         else if ((Bit_Synch_i == 1'b1) && (bit_counter_w == 4'd7) && (p_ParityEnable_i == DISABLE)) begin
-                            state_A_r <= INTERVAL;
-                            state_B_r <= INTERVAL;
-                            state_C_r <= INTERVAL; 
+                            state_A_r <= STOPBIT;
+                            state_B_r <= STOPBIT;
+                            state_C_r <= STOPBIT; 
                         end
                         else begin
                             state_A_r <= DATABITS;
@@ -164,9 +164,9 @@ module FSM_Rx(
                     end
                     PARITYBIT: begin
                         if (Bit_Synch_i == 1'b1) begin
-                            state_A_r <= INTERVAL;
-                            state_B_r <= INTERVAL;
-                            state_C_r <= INTERVAL;
+                            state_A_r <= STOPBIT;
+                            state_B_r <= STOPBIT;
+                            state_C_r <= STOPBIT;
                         end
                         else begin
                             state_A_r <= PARITYBIT;
@@ -174,28 +174,22 @@ module FSM_Rx(
                             state_C_r <= PARITYBIT;
                         end
                     end
-                    // The Stop bit is pointless in the rx core!
-                    // STOPBIT: begin
-                    //     if ((Rx_Synch_i == 1'b1)&&(p_Enable_i == ENABLE)) begin
-                    //         state_A_r <= STARTBIT;                              
-                    //         state_B_r <= STARTBIT;
-                    //         state_C_r <= STARTBIT;
-                    //     end
-                    //     else if (Bit_Synch_i == 1'b1) begin
-                    //         state_A_r <= INTERVAL;
-                    //         state_B_r <= INTERVAL;
-                    //         state_C_r <= INTERVAL;
-                    //     end
-                    //     else begin
-                    //         state_A_r <= STOPBIT;
-                    //         state_B_r <= STOPBIT;
-                    //         state_C_r <= STOPBIT;
-                    //     end
-                    // end
-                    default: begin
-                        state_A_r <= INTERVAL;
-                        state_B_r <= INTERVAL;
-                        state_C_r <= INTERVAL;
+                    STOPBIT: begin
+                        if ((Rx_Synch_i == 1'b1)&&(p_Enable_i == ENABLE)) begin
+                            state_A_r <= STARTBIT;                              
+                            state_B_r <= STARTBIT;
+                            state_C_r <= STARTBIT;
+                        end
+                        else if (Bit_Synch_i == 1'b1) begin
+                            state_A_r <= INTERVAL;
+                            state_B_r <= INTERVAL;
+                            state_C_r <= INTERVAL;
+                        end
+                        else begin
+                            state_A_r <= STOPBIT;
+                            state_B_r <= STOPBIT;
+                            state_C_r <= STOPBIT;
+                        end
                     end
                 endcase
             end

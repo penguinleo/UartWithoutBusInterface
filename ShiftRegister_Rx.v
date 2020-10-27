@@ -91,11 +91,9 @@ module ShiftRegister_Rx(
     // the interface of the RX core
         input           Rx_i,
         input   [3:0]   AcqNumPerBit_i,
-        input           p_ParityEnable_i,
     // the interface with the FSM_Rx module
         input   [4:0]   State_i,
         output  [3:0]   BitWidthCnt_o,   // the index of the bit in the byte
-        input   [3:0]   BitCounter_i,
     // the output of the module
         output  [11:0]  Byte_o,         // the output of the shift register, including the data bits and the parity bit
     // the sychronization signal
@@ -129,9 +127,6 @@ module ShiftRegister_Rx(
         // the acquisition point definition
             // parameter   ACQSITION_POINT = 4'd7;
             // parameter   PARITY_POINT    = ACQSITION_POINT + 1'b1;
-        // Parity Enable definition
-            parameter ENABLE    = 1'b1;
-            parameter DISABLE   = 1'b0;
         // error definition
             parameter   WRONG       = 1'b1;
             parameter   RIGHT       = 1'b0;  
@@ -143,12 +138,9 @@ module ShiftRegister_Rx(
         assign acqsig_dly_3clk_w    = shift_acq_r[2];
         assign acquisition_point_w  = {1'b0, AcqNumPerBit_i[3:1]};      // the acquisition point is the middle point in the acquisition points
         assign acquisite_time_w     = bit_width_cnt_r == acquisition_point_w;
-        assign Rx_Synch_o           = falling_edge_rx_w & (State_i == IDLE);
+        assign Rx_Synch_o           = falling_edge_rx_w & ((State_i == IDLE)|(State_i == STOPBIT));
         assign Bit_Synch_o          = (bit_width_cnt_r >= AcqNumPerBit_i) & (State_i != IDLE) & (AcqSig_i == 1'b1);
-        // assign Byte_Synch_o         = (State_i == STOPBIT) & (((acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1))|(falling_edge_rx_w == 1'b1));
-        assign Byte_Synch_o         = (     (p_ParityEnable_i == ENABLE) && (State_i == PARITYBIT)
-                                         || (p_ParityEnable_i == DISABLE) && (State_i == DATABITS) && (BitCounter_i == 4'd7)
-                                      ) && (acquisite_time_w == 1'b1) && (AcqSig_i == 1'b1);                                         
+        assign Byte_Synch_o         = (State_i == STOPBIT) & (((acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1))|(falling_edge_rx_w == 1'b1));
         assign Byte_o               = byte_r;
         assign BitWidthCnt_o        = bit_width_cnt_r;
         // assign p_ParityCalTrigger_o = (State_i == PARITYBIT) & (acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1);
@@ -215,14 +207,14 @@ module ShiftRegister_Rx(
                 byte_r <= {shift_reg_r[2] , 11'd0};
             end
             else if ((State_i == DATABITS) && (acquisite_time_w == 1'b1) && (acqsig_dly_1clk_w == 1'b1)) begin   // the data bits
-                byte_r <= {byte_r[11] , byte_r[9:3] , shift_reg_r[2] , 1'b1 , 2'b11};
+                byte_r <= {byte_r[11] , byte_r[9:3] , shift_reg_r[2] , 1'b1 , byte_r[1:0]};
             end
             else if ((State_i == PARITYBIT) && (acquisite_time_w == 1'b1) && (acqsig_dly_1clk_w == 1'b1)) begin  // the parity bit if the FSM move to this state
-                byte_r <= {byte_r[11:3] , shift_reg_r[2] , 2'b11}; 
+                byte_r <= {byte_r[11:3] , shift_reg_r[2] , byte_r[1:0]}; 
             end
-            // else if ((State_i == STOPBIT) && (acquisite_time_w == 1'b1) && (acqsig_dly_1clk_w == 1'b1)) begin    // the stop bit
-            //     byte_r <= {byte_r[11:2],shift_reg_r[2],1'b1};
-            // end
+            else if ((State_i == STOPBIT) && (acquisite_time_w == 1'b1) && (acqsig_dly_1clk_w == 1'b1)) begin    // the stop bit
+                byte_r <= {byte_r[11:2],shift_reg_r[2],1'b1};
+            end
             else begin
                 byte_r <= byte_r;
             end

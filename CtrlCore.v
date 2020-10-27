@@ -55,9 +55,9 @@
 //    4'b0110 |    6    |     1    | R/W |   BaudGeneratorLow    | Low 8 bits of the Baudrate generator register, write access enabled when ConfigEn == 1        |
 //    4'b0111 |    7    |     1    | R/W |  BitCompensateMethod  |         Round Up Period number in a bit       |       Round Down Period number in a bit       |
 //    4'b1000 |    8    |     1    |  W  |    InterrputEnable1   | Reserved  | Reserved  | Reserved  |    TOVR   |   TNFUL   |   TTRIG   | Reserved  |  TIMEOUT  |
-//    4'b1001 |    9    |     1    |  W  |    InterrputEnable2   |    PARE   | Reserved  |   ROVR    |    TFUL   |  TEMPTY   |   RFULL   |  REMPTY   |   RTRIG   | 
+//    4'b1001 |    9    |     1    |  W  |    InterrputEnable2   |    PARE   |   FRAME   |   ROVR    |    TFUL   |  TEMPTY   |   RFULL   |  REMPTY   |   RTRIG   | 
 //    4'b1000 |    8    |     1    |  R  |    InterruptMask1     | Reserved  | Reserved  | Reserved  |    TOVR   |   TNFUL   |   TTRIG   | Reserved  |  TIMEOUT  |
-//    4'b1001 |    9    |     1    |  R  |    InterruptMask2     |    PARE   | Reserved  |   ROVR    |    TFUL   |  TEMPTY   |   RFULL   |  REMPTY   |   RTRIG   |
+//    4'b1001 |    9    |     1    |  R  |    InterruptMask2     |    PARE   |   FRAME   |   ROVR    |    TFUL   |  TEMPTY   |   RFULL   |  REMPTY   |   RTRIG   |
 //    4'b1010 |    10   |     1    | R/W |    RxTrigLevelHigh    | High 8 bits of the rx fifo trigger level                                                      |      
 //    4'b1011 |    11   |     1    | R/W |    RxTrigLevelLow     | Low 8 bits of the rx fifo trigger level                                                       |
 //    4'b1100 |    12   |     1    | R/W |    TxTrigLevelHigh    | High 8 bits of the tx fifo trigger level                                                      |    
@@ -66,7 +66,7 @@
 //    4'b1111 |    15   |     1    | R/W |   ReceiveTimeOutLow   | Receive time out value                                                                        |
 //   ---------|---------|----------|-----|-----------------------|-----B7----|-----B6----|-----B5----|-----B4----|-----B3----|-----B2----|-----B1----|-----B0----|
 //    4'b0100 |    4    |     0    | R/W |   InterruptStatus1    | Reserved  | Reserved  | Reserved  |    TOVR   |   TNFUL   |   TTRIG   | Reserved  |  TIMEOUT  |     
-//    4'b0101 |    5    |     0    | R/W |   InterruptStatus2    |    PARE   | Reserved  |   ROVR    |    TFUL   |  TEMPTY   |   RFULL   |  REMPTY   |   RTRIG   | 
+//    4'b0101 |    5    |     0    | R/W |   InterruptStatus2    |    PARE   |   FRAME   |   ROVR    |    TFUL   |  TEMPTY   |   RFULL   |  REMPTY   |   RTRIG   | 
 //    4'b0110 |    6    |     0    |  R  | BytesNumberReceived1  |   High 8 bits of the bytes' number in receive fifo                                            |
 //    4'b0111 |    7    |     0    |  R  | BytesNumberReceived2  |   Low 8 bits of the bytes' number in receive fifo                                             |
 //    4'b1000 |    8    |     0    |  R  |    FrameFifoStatus    |     cmd                                                                                       |
@@ -114,7 +114,7 @@ module CtrlCore(
         output          p_RxCoreEn_o,               //The Rx core enable signal. Positive effective
         // error signal
             input           p_RxParityErr_i,        // RX parity check fail, positive error occur
-            // input           p_RxFrameErr_i,         // Rx stop bit missing, positive error occur
+            input           p_RxFrameErr_i,         // Rx stop bit missing, positive error occur
         // fifo control signal
             input [7:0]     RxData_i,               // Rx Fifo read port
             input           p_RxFIFO_Empty_i,       // Rx Fifo empty, status signal, positive effective
@@ -164,7 +164,7 @@ module CtrlCore(
         reg [2:0]   shift_TIMEOUT_r1            /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal TIMEOUT
         reg [2:0]   shift_TFUL_r1               /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal TFUL
         reg [2:0]   shift_ParityErr_r1          /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal Parity Error
-        // reg [2:0]   shift_FrameErr_r1           /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal Frame Error  
+        reg [2:0]   shift_FrameErr_r1           /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal Frame Error  
         reg [2:0]   shift_ROVR_r1               /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal ROVR       
         reg [2:0]   shift_TEMPTY_r1             /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal TEMPTY
         reg [2:0]   shift_RFULL_r1              /*synthesis syn_preserve = 1*/;  // the shift register for interrupt signal RFULL
@@ -252,7 +252,7 @@ module CtrlCore(
             wire        RisingEdge_TTRIG_w;
             wire        RisingEdge_TIMEOUT_w;
             wire        RisingEdge_PARE_w;
-            // wire        RisingEdge_FRAME_w;
+            wire        RisingEdge_FRAME_w;
             wire        RisingEdge_ROVR_w;
             wire        RisingEdge_TFUL_w;
             wire        RisingEdge_TEMPTY_w;
@@ -479,7 +479,7 @@ module CtrlCore(
             assign RisingEdge_TFUL_w    = (shift_TFUL_r1[2]     == OFF) && (shift_TFUL_r1[1]     == ON);
             assign RisingEdge_PARE_w    = (shift_ParityErr_r1[2]== OFF) && (shift_ParityErr_r1[1]== ON);
             assign RisingEdge_ROVR_w    = (shift_ROVR_r1[2]     == OFF) && (shift_ROVR_r1[1]     == ON);
-            // assign RisingEdge_FRAME_w   = (shift_FrameErr_r1[2] == OFF) && (shift_FrameErr_r1[1] == ON);
+            assign RisingEdge_FRAME_w   = (shift_FrameErr_r1[2] == OFF) && (shift_FrameErr_r1[1] == ON);
             assign RisingEdge_TEMPTY_w  = (shift_TEMPTY_r1[2]   == OFF) && (shift_TEMPTY_r1[1]   == ON);
             assign RisingEdge_RFULL_w   = (shift_RFULL_r1[2]    == OFF) && (shift_RFULL_r1[1]    == ON);
             assign RisingEdge_REMPTY_w  = (shift_REMPTY_r1[2]   == OFF) && (shift_REMPTY_r1[1]   == ON);
@@ -603,8 +603,7 @@ module CtrlCore(
         always @(posedge clk or negedge rst) begin
             if (!rst) begin
                 InterruptMask_r1[7:0] <= {
-                    // IRQ_PARE_OFF,   IRQ_FRAME_OFF,  IRQ_ROVR_OFF,   IRQ_TFUL_OFF,
-                    IRQ_PARE_OFF,   1'b1,           IRQ_ROVR_OFF,   IRQ_TFUL_OFF,
+                    IRQ_PARE_OFF,   IRQ_FRAME_OFF,  IRQ_ROVR_OFF,   IRQ_TFUL_OFF,
                     IRQ_TEMPTY_OFF, IRQ_RFULL_OFF,  IRQ_REMPTY_OFF, IRQ_RTRIG_OFF
                 };    
             end
@@ -819,7 +818,7 @@ module CtrlCore(
                     shift_TTRIG_r1      <= 3'b0;
                     shift_TIMEOUT_r1    <= 3'b0;
                     shift_ParityErr_r1  <= 3'b0;
-                    // shift_FrameErr_r1   <= 3'b0;
+                    shift_FrameErr_r1   <= 3'b0;
                     shift_TFUL_r1       <= 3'b0;
                     shift_TEMPTY_r1     <= 3'b0;
                     shift_RFULL_r1      <= 3'b0;
@@ -832,7 +831,7 @@ module CtrlCore(
                     shift_TTRIG_r1      <= {shift_TTRIG_r1[1:0],        ((BytesNumberInTxFifo_r1 >= TxTrigLevel_r1)&(TxTrigLevel_r1!=16'd0))}; // bytes number in fifo over the level and the level is not 0!
                     shift_TIMEOUT_r1    <= {shift_TIMEOUT_r1[1:0],      p_RxTimeOut_i};
                     shift_ParityErr_r1  <= {shift_ParityErr_r1[1:0],    p_RxParityErr_i};
-                    // shift_FrameErr_r1   <= {shift_FrameErr_r1[1:0],     p_RxFrameErr_i};
+                    shift_FrameErr_r1   <= {shift_FrameErr_r1[1:0],     p_RxFrameErr_i};
                     shift_TFUL_r1       <= {shift_TFUL_r1[1:0],         p_TxFIFO_Full_i};
                     shift_TEMPTY_r1     <= {shift_TEMPTY_r1[1:0],       p_TxFIFO_Empty_i};
                     shift_RFULL_r1      <= {shift_TFUL_r1[1:0],         p_RxFIFO_Full_i};
@@ -916,20 +915,20 @@ module CtrlCore(
                 end
             end
         // FRAME, receive module frame error, stop bit missing
-            // always @(posedge clk or negedge rst) begin
-            //     if (!rst) begin
-            //         InterruptState_r1[6] <= IRQ_FRAME_OFF;
-            //     end
-            //     else if (RisingEdge_FRAME_w == ON) begin // Byte missing the stop bit occur
-            //         InterruptState_r1[6] <= IRQ_FRAME_ON && InterruptMask_r1[6];
-            //     end
-            //     else if (InterruptStatus2_Write_Access_w == ON ) begin // clear the interrupt
-            //         InterruptState_r1[6] <= DataBus_i[6]?IRQ_FRAME_OFF:InterruptState_r1[6];
-            //     end
-            //     else begin
-            //         InterruptState_r1[6] <= InterruptState_r1[6];
-            //     end
-            // end
+            always @(posedge clk or negedge rst) begin
+                if (!rst) begin
+                    InterruptState_r1[6] <= IRQ_FRAME_OFF;
+                end
+                else if (RisingEdge_FRAME_w == ON) begin // Byte missing the stop bit occur
+                    InterruptState_r1[6] <= IRQ_FRAME_ON && InterruptMask_r1[6];
+                end
+                else if (InterruptStatus2_Write_Access_w == ON ) begin // clear the interrupt
+                    InterruptState_r1[6] <= DataBus_i[6]?IRQ_FRAME_OFF:InterruptState_r1[6];
+                end
+                else begin
+                    InterruptState_r1[6] <= InterruptState_r1[6];
+                end
+            end
         // ROVR, receive fifo overflow interrupt
             always @(posedge clk or negedge rst) begin
                 if (!rst) begin

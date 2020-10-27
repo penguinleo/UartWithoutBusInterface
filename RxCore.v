@@ -81,7 +81,7 @@ module RxCore(
         output [27:0]   RxFrameInfo,
         output          p_RxFrame_Empty_o,
         output          p_RxParityErr_o,
-        // output          p_RxFrameErr_o,
+        output          p_RxFrameErr_o,
     // Rx and Tx encode control signal
         input           p_ParityEnable_i,
         input           p_BigEnd_i,
@@ -149,12 +149,10 @@ module RxCore(
         .clk(clk),
         .rst(rst),
         .AcqSig_i(AcqSig_i),
-        .Rx_i(Rx_i),
         .AcqNumPerBit_i(AcqNumPerBit_i),
-        .p_ParityEnable_i(p_ParityEnable_i),
+        .Rx_i(Rx_i),
         .State_i(State_w),
         .BitWidthCnt_o(BitWidthCnt_w),
-        .BitCounter_i(BitCounter_w),
         .Byte_o(Byte_w),
         .Bit_Synch_o(Bit_Synch_w),
         .Byte_Synch_o(Byte_Synch_w),
@@ -189,7 +187,7 @@ module RxCore(
 		.p_ParityCalTrigger_o(p_ParityCalTrigger_w),
 		.ParityResult_i(ParityResult_w),
         .p_ParityErr_o(p_RxParityErr_o),
-        // .p_FrameErr_o(p_RxFrameErr_o),
+        .p_FrameErr_o(p_RxFrameErr_o),
 		.ParityErrorNum_o(ParityErrorNum_o)
         );
     AnsDelayTimeMeasure_ver2 DlyTimeMea(

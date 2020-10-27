@@ -123,7 +123,7 @@ module UartCore(
         // rx module interface
             .p_RxCoreEn_o(p_RxCoreEn_w),
             .p_RxParityErr_i(p_RxParityErr_w),
-            // .p_RxFrameErr_i(p_RxFrameErr_w),
+            .p_RxFrameErr_i(p_RxFrameErr_w),
             .RxData_i(RxData_w),
             .p_RxFIFO_Empty_i(p_RxFIFO_Empty_w),
             .p_RxFIFO_Over_i(p_RxFIFO_Over_w),
@@ -183,7 +183,7 @@ module UartCore(
             .RxFrameInfo(RxFrameInfo_w),
             .p_RxFrame_Empty_o(p_RxFrame_Empty_w),
             .p_RxParityErr_o(p_RxParityErr_w),
-            // .p_RxFrameErr_o(p_RxFrameErr_w),
+            .p_RxFrameErr_o(p_RxFrameErr_w),
         // Rx and Tx encode control output
             .p_ParityEnable_i(p_ParityEnable_w),
             .p_BigEnd_i(p_BigEnd_w),
