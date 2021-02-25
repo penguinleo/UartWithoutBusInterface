@@ -191,6 +191,11 @@ module FSM_Rx(
                             state_C_r <= STOPBIT;
                         end
                     end
+                    default: begin
+                        state_A_r <= INTERVAL;                              
+                        state_B_r <= INTERVAL;
+                        state_C_r <= INTERVAL;
+                    end
                 endcase
             end
         end
