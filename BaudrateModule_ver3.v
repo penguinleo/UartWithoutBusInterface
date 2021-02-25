@@ -54,8 +54,8 @@
 // Input Signal List:
 //      1   |   clk                     :   clock signal
 //      2   |   rst                     :   reset signal, negative enable.
-//      3   |   AcqPeriod_i[11:0]       :   The acquisition signal period counting on the system
-//                                          clock signal.
+//      3   |   AcqPeriod_i[15:0]       :   The acquisition signal period counting on the system
+//                                          clock signal. Note that the value should larger than 1 !!
 //      4   |   BitCompensation_i[7:0]  :   Bit compensation give out the compensate method. The 
 //                                          high 4 bits control the number of the period with the 
 //                                          round up counting limit; while the low 4 bits control 
@@ -67,7 +67,7 @@
 // Note:  
 // 
 // -----------------------------------------------------------------------------   
-module BaudrateModule_ver2(
+module BaudrateModule_ver3(
         input               clk,            //System input clock signal
         input               rst,            //System reset signal
     // The Acquisition Parameter definition
@@ -94,7 +94,8 @@ module BaudrateModule_ver2(
         // Acquisition signal and Baudrate signal trigger
     // Wire logic definition
         // state logic 
-            wire        Time2Reload_w;                  // the state machine trigger condition
+            wire        Time2Reload_w;                  // the state that the counter reload the next period counter number
+            wire        Time2LoadCfg_w;                 // the state that the counter number configuration register fresh, should at least 1 clk before Time2Reload_w
         // the comparation of the acq_up_time_cnt_r and acq_down_time_cnt_r for the compensate algorithm
             wire        AcqUpNumberReachLimit_w;            // the acq_up_time_cnt_r has decreased to zero
             wire        AcqDownNumberReachLimit_w;          // the acq_down_time_cnt_r has decreased to zero 
@@ -127,6 +128,7 @@ module BaudrateModule_ver2(
     // Assign
         // State machine 
             assign Time2Reload_w    =   (acq_period_counter_r == 16'd0);
+            assign Time2LoadCfg_w   =   (acq_period_counter_r == 16'd1) && (acq_up_time_cnt_r == 4'd0) && (acq_down_time_cnt_r == 4'd0);
         // the comparation of the acq_up_time_cnt_r and acq_down_time_cnt_r
             assign AcqUpNumberReachLimit_w    = (acq_up_time_cnt_r == 4'd0);      // the register decrease to zero 
             assign AcqDownNumberReachLimit_w  = (acq_down_time_cnt_r == 4'd0);    // the register decrease to zero 
@@ -134,11 +136,12 @@ module BaudrateModule_ver2(
             assign AcqUpNumberInitMore_w      = (acq_up_time_limit_r > acq_down_time_limit_r);
         // the judge result combination of the comparation result     
             assign AcqRising_w          = (acq_period_counter_r == 16'd0);
-            assign BaudRising_w         = AcqRising_w & (acq_up_time_cnt_r == 4'd0) & (acq_down_time_cnt_r == 4'd0);
-            assign AcqTimeUpSelected_w  = (AcqUpNumberReachLimit_w & AcqDownNumberReachLimit_w & AcqUpNumberInitMore_w) 
-                                        | (~AcqUpNumberReachLimit_w& AcqDownNumberReachLimit_w ) 
-                                        | (~AcqUpNumberReachLimit_w&~AcqDownNumberReachLimit_w & AcqUpNumberLeftMore_w);
-            assign AcqNumberReload_w    = AcqUpNumberReachLimit_w & AcqDownNumberReachLimit_w;
+            assign BaudRising_w         = AcqRising_w & (acq_up_time_cnt_r == 4'd0) && (acq_down_time_cnt_r == 4'd0);
+            // assign AcqTimeUpSelected_w  = (AcqUpNumberReachLimit_w & AcqDownNumberReachLimit_w & AcqUpNumberInitMore_w) 
+            //                             | (~AcqUpNumberReachLimit_w& AcqDownNumberReachLimit_w ) 
+            //                             | (~AcqUpNumberReachLimit_w&~AcqDownNumberReachLimit_w & AcqUpNumberLeftMore_w);
+            assign AcqTimeUpSelected_w  = (acq_up_time_cnt_r > acq_down_time_cnt_r) && (acq_up_time_cnt_r != 4'd0);
+            assign AcqNumberReload_w    = AcqUpNumberReachLimit_w && AcqDownNumberReachLimit_w;
         // output signal assign
             assign AcqSig_o     = acqsig_r;
             assign BaudSig_o    = baudsig_r;
@@ -147,22 +150,16 @@ module BaudrateModule_ver2(
     // input data buffer opperation all register only available when the baud_en_r is disabled
         always @(posedge clk or negedge rst) begin
             if (!rst) begin
-                acq_period_down_r           <= DEFAULT_PERIOD;
-                acq_period_up_r             <= DEFAULT_PERIOD + 1'b1;
-                acq_up_time_limit_r         <= DEFAULT_UP_TIME;
-                acq_down_time_limit_r       <= DEFAULT_DOWN_TIME;
+                acq_period_down_r           <= DEFAULT_PERIOD - 1'b1;
+                acq_period_up_r             <= DEFAULT_PERIOD;
+                // acq_up_time_limit_r         <= DEFAULT_UP_TIME;
+                // acq_down_time_limit_r       <= DEFAULT_DOWN_TIME;
             end
-            else if (BaudRising_w == 1'b1) begin 
-                acq_period_down_r           <= AcqPeriod_i;
-                acq_period_up_r             <= AcqPeriod_i + 1'b1;
-                acq_up_time_limit_r         <= BitCompensation_i[7:4];
-                acq_down_time_limit_r       <= BitCompensation_i[3:0];
-            end
-            else begin
-                acq_period_down_r           <= acq_period_down_r;                    
-                acq_period_up_r             <= acq_period_up_r;      
-                acq_up_time_limit_r         <= acq_up_time_limit_r;  
-                acq_down_time_limit_r       <= acq_down_time_limit_r;                
+            else if (Time2LoadCfg_w) begin   // Avoid unexpected baudrate period, the cofiguration reload time should at the end of the baudrate period
+                acq_period_down_r           <= AcqPeriod_i - 1'b1;
+                acq_period_up_r             <= AcqPeriod_i;
+                // acq_up_time_limit_r         <= BitCompensation_i[7:4];
+                // acq_down_time_limit_r       <= BitCompensation_i[3:0];
             end
         end
     // the acquisition period coutner
@@ -188,10 +185,10 @@ module BaudrateModule_ver2(
                 acq_up_time_cnt_r   <= DEFAULT_UP_TIME;
                 acq_down_time_cnt_r <= DEFAULT_DOWN_TIME;
             end
-            else if (Time2Reload_w == 1'b1) begin
+            else if (Time2LoadCfg_w == 1'b1) begin
                 if (AcqNumberReload_w == 1'b1) begin
-                    acq_up_time_cnt_r   <= acq_up_time_limit_r;
-                    acq_down_time_cnt_r <= acq_down_time_limit_r;
+                    acq_up_time_cnt_r   <= BitCompensation_i[7:4];
+                    acq_down_time_cnt_r <= BitCompensation_i[3:0];
                 end 
                 else if (AcqTimeUpSelected_w == UP_PERIOD) begin
                     acq_up_time_cnt_r   <= acq_up_time_cnt_r - 1'b1;
@@ -202,9 +199,17 @@ module BaudrateModule_ver2(
                     acq_down_time_cnt_r <= acq_down_time_cnt_r - 1'b1;
                 end
             end
-            else begin
-                acq_up_time_cnt_r   <= acq_up_time_cnt_r;                   
-                acq_down_time_cnt_r <= acq_down_time_cnt_r;                 
+            else if ((Time2LoadCfg_w == 1'b1) && (AcqNumberReload_w == 1'b1)) begin
+                acq_up_time_cnt_r   <= BitCompensation_i[7:4];
+                acq_down_time_cnt_r <= BitCompensation_i[3:0];
+            end
+            else if ((Time2Reload_w == 1'b1) && (AcqTimeUpSelected_w == UP_PERIOD)) begin
+                acq_up_time_cnt_r   <= acq_up_time_cnt_r - 1'b1;
+                acq_down_time_cnt_r <= acq_down_time_cnt_r;
+            end
+            else if ((Time2Reload_w == 1'b1) && (AcqTimeUpSelected_w == DOWN_PERIOD)) begin
+                acq_up_time_cnt_r   <= acq_up_time_cnt_r;
+                acq_down_time_cnt_r <= acq_down_time_cnt_r - 1'b1;
             end
         end
     // output register fresh
