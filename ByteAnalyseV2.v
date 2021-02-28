@@ -238,7 +238,6 @@ module ByteAnalyseV2(
         // byte_r buffer fresh module
             always @(posedge clk or negedge rst) begin
                 if (!rst) begin
-                    // reset
                     byte_r <= 12'h000;
                 end
                 else if (Byte_Synch_i == 1'b1) begin

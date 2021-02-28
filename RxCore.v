@@ -115,6 +115,7 @@ module RxCore(
         wire [4:0]  State_w;
         wire [3:0]  BitCounter_w;
         wire [3:0]  BitWidthCnt_w;
+        wire        StartBitErr_w;
         wire        ParityResult_w;
         wire [11:0] Byte_w;
         wire [7:0]  Data_w;
@@ -139,6 +140,7 @@ module RxCore(
         .p_Enable_i(p_Enable_i),
         .Rx_Synch_i(Rx_Synch_w),
         .Bit_Synch_i(Bit_Synch_w),
+        .StartBitErr_i(StartBitErr_w),
         .AcqSig_i(AcqSig_i),
         .p_ParityEnable_i(p_ParityEnable_i),
         .State_o(State_w),
@@ -152,6 +154,7 @@ module RxCore(
         .AcqNumPerBit_i(AcqNumPerBit_i),
         .Rx_i(Rx_i),
         .State_i(State_w),
+        .StartBitErr_o(StartBitErr_w),
         .BitWidthCnt_o(BitWidthCnt_w),
         .Byte_o(Byte_w),
         .Bit_Synch_o(Bit_Synch_w),

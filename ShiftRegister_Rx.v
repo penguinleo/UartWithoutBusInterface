@@ -42,13 +42,14 @@
 //                                  baudrate precision of the receiving signal.
 //                                  The counter would start at 1 and gain to 15 then 0, next start another bit r-
 //                                  -eceiving.
-//      2   |   Byte_o          :   The reveiving byte from the rx wire, the byte including the start bit, data bits,
+//      2   |   StartBitErr_o   :   The start bit is wrong the state machine should return to the idle state
+//      3   |   Byte_o          :   The reveiving byte from the rx wire, the byte including the start bit, data bits,
 //                                  parity bits(if enabled), stop bit.
-//      3   |   Bit_Synch_o     :   The synchronous signal for bit. During the last acquision signal period, this 
+//      4   |   Bit_Synch_o     :   The synchronous signal for bit. During the last acquision signal period, this 
 //                                  signal would keep high, which means next period is a new bit.
-//      4   |   Rx_Synch_o      :   It is an important sychronous signal, which sychronous the RxCore with the input 
+//      5   |   Rx_Synch_o      :   It is an important sychronous signal, which sychronous the RxCore with the input 
 //                                  rx signal.
-//      5   |   Byte_Synch_o    :   The synchronouse signal at the stop bit acquisition point.
+//      6   |   Byte_Synch_o    :   The synchronouse signal at the stop bit acquisition point.
 // Note:    2019-12-02
 //              1   |   Prob1   |   The bit_width_cnt_r is better to be reinforced by tri-mode redundancy design;
 //              2   |   Prob2   |   The byte_r is better to be reinforced by tri-mode redundancy design;
@@ -95,6 +96,7 @@ module ShiftRegister_Rx(
         input   [4:0]   State_i,
         output  [3:0]   BitWidthCnt_o,   // the index of the bit in the byte
     // the output of the module
+        output          StartBitErr_o,  // The start bit error, the state machine return to the idle module
         output  [11:0]  Byte_o,         // the output of the shift register, including the data bits and the parity bit
     // the sychronization signal
         output          Bit_Synch_o,    // a bit has been received,the bit width counter has finished
@@ -108,7 +110,7 @@ module ShiftRegister_Rx(
         reg [2:0]   shift_reg_r;        // synchronousing the asynchronous signal 
         reg [3:0]   bit_width_cnt_r;   // this register was applied to measure the width of the rx signal 
         reg [11:0]  byte_r;             // this register is working like a shift register
-        reg         parity_error_r;     // the parity fail
+        reg         startbit_error_r;   // the start bit error signal,reset by the falling edge of the Rx in IDEL state
     // wire definition 
         wire        filter_rx_w;        // the filter output
         wire        falling_edge_rx_w;  // the falling edge of the rx port
@@ -143,6 +145,7 @@ module ShiftRegister_Rx(
         assign Byte_Synch_o         = (State_i == STOPBIT) & (((acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1))|(falling_edge_rx_w == 1'b1));
         assign Byte_o               = byte_r;
         assign BitWidthCnt_o        = bit_width_cnt_r;
+        assign StartBitErr_o        = startbit_error_r;
         // assign p_ParityCalTrigger_o = (State_i == PARITYBIT) & (acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1);
     // Filter for the rx port
         always @(posedge clk or negedge rst) begin
@@ -219,4 +222,14 @@ module ShiftRegister_Rx(
                 byte_r <= byte_r;
             end
         end
+    // startbit_error_r, StartBit Error Generate
+        always @(posedge clk or negedge rst) begin
+            if (!rst) begin
+                startbit_error_r <= 1'b0;                    
+            end
+            else if ((State_i == STARTBIT) && (acquisite_time_w == 1'b1) && (acqsig_dly_2clk_w == 1'b1)) begin
+                startbit_error_r <= byte_r[11];     // if the start bit is 1, error generate
+            end   // The error would keep active until a true start bit was received
+        end
+
 endmodule

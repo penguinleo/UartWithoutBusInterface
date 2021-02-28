@@ -47,6 +47,7 @@ module FSM_Rx(
     // signal from ShiftRegister_Rx
         input           Rx_Synch_i,         // the triggle signal that a byte is running on the wire
         input           Bit_Synch_i,        // the bit in the byte has been received successfully
+        input           StartBitErr_i,      // the start bit error signal
     // signal from the baudrate generate module
         input           AcqSig_i,
     // signal from the control register
@@ -122,7 +123,7 @@ module FSM_Rx(
             else begin
                 case(state_w)
                     INTERVAL: begin
-                        if ((Rx_Synch_i == 1'b1)&&(p_Enable_i == ENABLE)) begin
+                        if ((Rx_Synch_i == 1'b1) && (p_Enable_i == ENABLE)) begin
                             state_A_r <= STARTBIT;                              
                             state_B_r <= STARTBIT;
                             state_C_r <= STARTBIT;
@@ -134,7 +135,7 @@ module FSM_Rx(
                         end
                     end
                     STARTBIT: begin
-                        if (Bit_Synch_i == 1'b1) begin
+                        if ((Bit_Synch_i == 1'b1) && (StartBitErr_i == 1'b0)) begin
                             state_A_r <= DATABITS;
                             state_B_r <= DATABITS;
                             state_C_r <= DATABITS;
