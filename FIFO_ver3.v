@@ -23,7 +23,7 @@
 //      3   :   full_o, the fifo full signal
 // -----------------------------------------------------------------------------
 
-module  FIFO_ver2
+module  FIFO_ver3
 #(
     parameter DATA_WIDTH = 8,   // the data width of the fifo
     parameter DEPTH = 4096      // the number of data in the fifo
@@ -31,11 +31,11 @@ module  FIFO_ver2
 (
     input           clk,
     input           rst,
-    input [7:0]     data_i,
+    input [DATA_WIDTH-1:0]     data_i,
     input           n_we_i,
     input           n_re_i,
     input           n_clr_i,
-    output [7:0]    data_o,
+    output [DATA_WIDTH-1:0]    data_o,
     output [15:0]   bytes_in_fifo_o,
     output          p_over_o,
     output          p_full_o,
@@ -72,7 +72,7 @@ module  FIFO_ver2
             reg [2:0]           p_full_r/*synthesis syn_preserve = 1*/;
             reg [2:0]           p_nearfull_r/*synthesis syn_preserve = 1*/;
             reg [2:0]           p_over_r/*synthesis syn_preserve = 1*/;
-            reg [7:0]           output_data_r;
+            reg [DATA_WIDTH-1:0]           output_data_r;
             reg [WIDTH-1:0]     bytes_in_fifo_r;        // the number of the bytes in fifo
     // wire definition
         wire [WIDTH-1:0] pointer_wr_w;
@@ -217,8 +217,11 @@ module  FIFO_ver2
         end
     // output buffer
         always @(posedge clk or negedge rst) begin
-            if (!rst || !n_clr_i) begin
-                output_data_r <= 8'd0;                
+            if (!rst ) begin
+                output_data_r <= 0;                
+            end
+            else if (!n_clr_i) begin
+                output_data_r <= 0;
             end
             else if ((n_re_i == 1'b0) && (p_empty_w == 1'b0)) begin
                 output_data_r <= memory[pointer_rd_w];
