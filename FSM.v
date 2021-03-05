@@ -45,7 +45,7 @@ module FSM(
     input           p_BaudSig_i,
     input           p_FiFoEmpty_i,
     input           ParityEnable_i,
-    output          p_ParityCalTrigger_o,
+    // output          p_ParityCalTrigger_o,
     output [4:0]    State_o,
     output [3:0]    BitCounter_o
     );
@@ -89,8 +89,8 @@ module FSM(
                                 | (bit_counter_C_r & bit_counter_A_r);
         assign BitCounter_o     = bit_counter_w;
         assign State_o          = state_w;
-        assign p_ParityCalTrigger_o = p_ParityCalTrigger_w;
-        assign p_ParityCalTrigger_w = (state_w == DATABITS) && (bit_counter_w == 4'd0) && (p_BaudSig_i == 1'b1);
+        // assign p_ParityCalTrigger_o = p_ParityCalTrigger_w;
+        // assign p_ParityCalTrigger_w = (state_w == DATABITS) && (bit_counter_w == 4'd0) && (p_BaudSig_i == 1'b1);
     // data bits counter module
         always @(posedge clk or negedge rst) begin
             if (!rst) begin

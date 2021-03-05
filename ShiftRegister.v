@@ -21,7 +21,7 @@
 //      8   :   p_BigEnd_i, the big end mode,
 //                          1- the high bit send first
 //                          2- the low bit send first
-//      9   :   ParityResult_i, the parity result calculated by the ParityGenerator module
+//      9   :   ParityMethod_i, the parity method
 // Output Signal List:
 //      1   :   n_FifoRe_o, the FIFO read signal, active low.
 //      2   :   ShiftData_o, the data in the shift register, could be synthesised
@@ -42,7 +42,7 @@ module ShiftRegister(
     input           p_FiFoEmpty_i,
     // interface with the inner module
     input           p_BigEnd_i,
-    input           ParityResult_i,
+    input           ParityMethod_i,
     output  [7:0]   ShiftData_o,
     output          SerialData_o
     );
@@ -77,6 +77,9 @@ module ShiftRegister(
             parameter BIT5      = 4'd5;
             parameter BIT6      = 4'd6;
             parameter BIT7      = 4'd7;
+        // parity method definition
+            parameter EVEN      = 1'b0;
+            parameter ODD       = 1'b1;
     // assignment
         // output assign
             assign n_FifoRe_o   = n_fifo_rd_r[0];
@@ -105,9 +108,6 @@ module ShiftRegister(
             end
             else if (n_fifo_rd_r[1] == 1'd0) begin
                 shift_reg_r <= FifoData_i;
-            end
-            else begin
-                shift_reg_r <= shift_reg_r;
             end
         end
     // serial register output module
@@ -147,7 +147,12 @@ module ShiftRegister(
                 end
             end
             else if (State_i == PARITYBIT) begin
-                serial_data_r <= ParityResult_i;
+                if (ParityMethod_i == EVEN) begin
+                    serial_data_r <= ^shift_reg_r;
+                end
+                else begin
+                    serial_data_r <= ~(^shift_reg_r);
+                end
             end
             else if (State_i == STOPBIT) begin
                 serial_data_r <= 1'b1;

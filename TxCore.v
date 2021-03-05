@@ -67,7 +67,7 @@ module TxCore(
     // wire definition
         wire    [4:0]   State_w;
         wire    [3:0]   BitCounter_w;
-        wire            p_ParityCalTrigger_w;
+        // wire            p_ParityCalTrigger_w;
         wire    [7:0]   ShiftData_w;
         wire    [7:0]   FifoData_w;
         wire            ParityResult_w;
@@ -97,7 +97,7 @@ module TxCore(
         .p_BaudSig_i(p_BaudSig_i),
         .p_FiFoEmpty_i(p_FiFoEmpty_w),
         .ParityEnable_i(p_ParityEnable_i),
-        .p_ParityCalTrigger_o(p_ParityCalTrigger_w),
+        // .p_ParityCalTrigger_o(p_ParityCalTrigger_w),
         .State_o(State_w),
         .BitCounter_o(BitCounter_w)
         );
@@ -112,22 +112,22 @@ module TxCore(
         .FifoData_i(FifoData_w),
         .p_FiFoEmpty_i(p_FiFoEmpty_w),
         .p_BigEnd_i(p_BigEnd_i),
-        .ParityResult_i(ParityResult_w),
+        .ParityMethod_i(ParityMethod_i),
         .ShiftData_o(ShiftData_w),
         .SerialData_o(Tx_o)
         );
 
-    ParityGenerator ParityGenerator(
-        .clk(clk),
-        .rst(rst),
-        // .p_BaudSig_i(p_BaudSig_i),
-        // .State_i(State_w),
-        .p_ParityCalTrigger_i(p_ParityCalTrigger_w),
-        // .BitCounter_i(BitCounter_w),
-        .ParityMethod_i(ParityMethod_i),
-        .Data_i(ShiftData_w),
-        .ParityResult_o(ParityResult_w)
-        );
+    // ParityGenerator ParityGenerator(
+    //     .clk(clk),
+    //     .rst(rst),
+    //     // .p_BaudSig_i(p_BaudSig_i),
+    //     // .State_i(State_w),
+    //     .p_ParityCalTrigger_i(p_ParityCalTrigger_w),
+    //     // .BitCounter_i(BitCounter_w),
+    //     .ParityMethod_i(ParityMethod_i),
+    //     .Data_i(ShiftData_w),
+    //     .ParityResult_o(ParityResult_w)
+    //     );
 
     FIFO_ver2 #(
         // .WIDTH(16'd16),
