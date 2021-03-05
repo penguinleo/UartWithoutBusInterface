@@ -813,17 +813,17 @@ module CtrlCore(
         // port input interrupt signal detect, shift register 
             always @(posedge clk or negedge rst) begin
                 if (!rst) begin
-                    shift_TOVR_r1       <= 3'b0;
-                    shift_TNFUL_r1      <= 3'b0;
-                    shift_TTRIG_r1      <= 3'b0;
-                    shift_TIMEOUT_r1    <= 3'b0;
-                    shift_ParityErr_r1  <= 3'b0;
-                    shift_FrameErr_r1   <= 3'b0;
-                    shift_TFUL_r1       <= 3'b0;
-                    shift_TEMPTY_r1     <= 3'b0;
-                    shift_RFULL_r1      <= 3'b0;
-                    shift_REMPTY_r1     <= 3'b0;
-                    shift_RTRIG_r1      <= 3'b0;
+                    shift_TOVR_r1       <= 3'b000;
+                    shift_TNFUL_r1      <= 3'b000;
+                    shift_TTRIG_r1      <= 3'b000;
+                    shift_TIMEOUT_r1    <= 3'b000;
+                    shift_ParityErr_r1  <= 3'b000;
+                    shift_FrameErr_r1   <= 3'b000;
+                    shift_TFUL_r1       <= 3'b000;
+                    shift_TEMPTY_r1     <= 3'b000;
+                    shift_RFULL_r1      <= 3'b000;
+                    shift_REMPTY_r1     <= 3'b000;
+                    shift_RTRIG_r1      <= 3'b000;
                 end
                 else begin
                     shift_TOVR_r1       <= {shift_TOVR_r1[1:0],         p_TxFIFO_Over_i};
@@ -836,7 +836,7 @@ module CtrlCore(
                     shift_TEMPTY_r1     <= {shift_TEMPTY_r1[1:0],       p_TxFIFO_Empty_i};
                     shift_RFULL_r1      <= {shift_TFUL_r1[1:0],         p_RxFIFO_Full_i};
                     shift_REMPTY_r1     <= {shift_REMPTY_r1[1:0],       p_RxFIFO_Empty_i};
-                    shift_RTRIG_r1      <= {shift_RTRIG_r1[1:0],        ((BytesNumberInRxFifo_r1 >= TxTrigLevel_r1)&(RxTrigLevel_r1!=16'd0))}; //
+                    shift_RTRIG_r1      <= {shift_RTRIG_r1[1:0],        ((BytesNumberInRxFifo_r1 >= RxTrigLevel_r1)&(RxTrigLevel_r1!=16'd0))}; //
                 end
             end
         // TOVR, transmission fifo overflow interrupt
@@ -998,7 +998,7 @@ module CtrlCore(
                     InterruptState_r1[1] <= IRQ_REMPTY_ON && InterruptMask_r1[1];
                 end
                 else if (InterruptStatus2_Write_Access_w == ON ) begin
-                    InterruptState_r1[1] <= DataBus_i[2]?IRQ_REMPTY_OFF:InterruptState_r1[1];
+                    InterruptState_r1[1] <= DataBus_i[1]?IRQ_REMPTY_OFF:InterruptState_r1[1];
                 end
                 else begin
                     InterruptState_r1[1] <= InterruptState_r1[1];
@@ -1013,7 +1013,7 @@ module CtrlCore(
                     InterruptState_r1[0] <= IRQ_RTRIG_ON && InterruptMask_r1[0];
                 end
                 else if (InterruptStatus2_Write_Access_w == ON ) begin
-                    InterruptState_r1[0] <= DataBus_i[0]?IRQ_RTRIG_ON:InterruptState_r1[0];
+                    InterruptState_r1[0] <= DataBus_i[0]?IRQ_RTRIG_OFF:InterruptState_r1[0];
                 end
                 else begin
                     InterruptState_r1[0] <= InterruptState_r1[0];
