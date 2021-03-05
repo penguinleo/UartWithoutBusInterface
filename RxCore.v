@@ -111,12 +111,12 @@ module RxCore(
         wire        Rx_Synch_w;
         wire        Bit_Synch_w;
         wire 		Byte_Synch_w;
-        wire        p_ParityCalTrigger_w;
+        // wire        p_ParityCalTrigger_w;
         wire [4:0]  State_w;
         wire [3:0]  BitCounter_w;
         wire [3:0]  BitWidthCnt_w;
         wire        StartBitErr_w;
-        wire        ParityResult_w;
+        // wire        ParityResult_w;
         wire [11:0] Byte_w;
         wire [7:0]  Data_w;
         wire [7:0]	ParityData_w;
@@ -162,16 +162,16 @@ module RxCore(
         .Rx_Synch_o(Rx_Synch_w)
         );
 
-    ParityGenerator ParityGenerator(
-        .clk(clk),
-        .rst(rst),
-        .p_ParityCalTrigger_i(p_ParityCalTrigger_w),
-        .ParityMethod_i(ParityMethod_i),
-        .Data_i(ParityData_w),          // Be Carefull, when trigger signal generate the byte data is low 8 bits
-        .ParityResult_o(ParityResult_w)
-        );
+    // ParityGenerator ParityGenerator(
+    //     .clk(clk),
+    //     .rst(rst),
+    //     .p_ParityCalTrigger_i(p_ParityCalTrigger_w),
+    //     .ParityMethod_i(ParityMethod_i),
+    //     .Data_i(ParityData_w),          // Be Carefull, when trigger signal generate the byte data is low 8 bits
+    //     .ParityResult_o(ParityResult_w)
+    //     );
 
-    ByteAnalyseV2 ByteAnalyse(
+    ByteAnalyseV3 ByteAnalyse(
       	.clk(clk),
 		.rst(rst),
 		.n_we_o(n_we_w),
@@ -179,16 +179,17 @@ module RxCore(
 		.BaudSig_i(BaudSig_i),
 		.byte_i(Byte_w),
 		.Byte_Synch_i(Byte_Synch_w),
-		.acqurate_stamp_i(acqurate_stamp_i),
-		.millisecond_stamp_i(millisecond_stamp_i),
-		.second_stamp_i(second_stamp_i),
+		// .acqurate_stamp_i(acqurate_stamp_i),
+		// .millisecond_stamp_i(millisecond_stamp_i),
+		// .second_stamp_i(second_stamp_i),
 		.p_ParityEnable_i(p_ParityEnable_i),
 		.p_BigEnd_i(p_BigEnd_i),
-		.n_rd_frame_fifo_i(n_RxFrameInfo_Rd_i),
-		.frame_info_o(RxFrameInfo),
-		.ParityCalData_o(ParityData_w),
-		.p_ParityCalTrigger_o(p_ParityCalTrigger_w),
-		.ParityResult_i(ParityResult_w),
+		// .n_rd_frame_fifo_i(n_RxFrameInfo_Rd_i),
+		// .frame_info_o(RxFrameInfo),
+		// .ParityCalData_o(ParityData_w),
+		// .p_ParityCalTrigger_o(p_ParityCalTrigger_w),
+        .ParityMethod_i(ParityMethod_i),
+		// .ParityResult_i(ParityResult_w),
         .p_ParityErr_o(p_RxParityErr_o),
         .p_FrameErr_o(p_RxFrameErr_o),
 		.ParityErrorNum_o(ParityErrorNum_o)

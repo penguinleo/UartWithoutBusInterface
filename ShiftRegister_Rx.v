@@ -131,18 +131,21 @@ module ShiftRegister_Rx(
             // parameter   PARITY_POINT    = ACQSITION_POINT + 1'b1;
         // error definition
             parameter   WRONG       = 1'b1;
-            parameter   RIGHT       = 1'b0;  
+            parameter   RIGHT       = 1'b0; 
+        // parity method definition
+            parameter EVEN      = 1'b0;
+            parameter ODD       = 1'b1; 
     // wire assign 
-        assign filter_rx_w          = (shift_syn_rx_r[3]&&shift_syn_rx_r[2])||(shift_syn_rx_r[2]&&shift_syn_rx_r[1])||(shift_syn_rx_r[1]&&shift_syn_rx_r[3]);
-        assign falling_edge_rx_w    = shift_reg_r[2] & !shift_reg_r[1]; // falling edge of the rx
+        assign filter_rx_w          = (shift_syn_rx_r[3] & shift_syn_rx_r[2]) | (shift_syn_rx_r[2] & shift_syn_rx_r[1]) | (shift_syn_rx_r[1] & shift_syn_rx_r[3]);
+        assign falling_edge_rx_w    = shift_reg_r[2] && !shift_reg_r[1]; // falling edge of the rx
         assign acqsig_dly_1clk_w    = shift_acq_r[0];
         assign acqsig_dly_2clk_w    = shift_acq_r[1];
         assign acqsig_dly_3clk_w    = shift_acq_r[2];
         assign acquisition_point_w  = {1'b0, AcqNumPerBit_i[3:1]};      // the acquisition point is the middle point in the acquisition points
         assign acquisite_time_w     = bit_width_cnt_r == acquisition_point_w;
-        assign Rx_Synch_o           = falling_edge_rx_w & ((State_i == IDLE)|(State_i == STOPBIT));
-        assign Bit_Synch_o          = (bit_width_cnt_r >= AcqNumPerBit_i) & (State_i != IDLE) & (AcqSig_i == 1'b1);
-        assign Byte_Synch_o         = (State_i == STOPBIT) & (((acquisite_time_w == 1'b1) & (AcqSig_i == 1'b1))|(falling_edge_rx_w == 1'b1));
+        assign Rx_Synch_o           = falling_edge_rx_w && ((State_i == IDLE)||(State_i == STOPBIT));
+        assign Bit_Synch_o          = (bit_width_cnt_r >= AcqNumPerBit_i) && (State_i != IDLE) && (AcqSig_i == 1'b1);
+        assign Byte_Synch_o         = (State_i == STOPBIT) && (((acquisite_time_w == 1'b1) && (AcqSig_i == 1'b1)) || (falling_edge_rx_w == 1'b1));
         assign Byte_o               = byte_r;
         assign BitWidthCnt_o        = bit_width_cnt_r;
         assign StartBitErr_o        = startbit_error_r;
